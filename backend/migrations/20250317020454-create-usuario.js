@@ -15,6 +15,9 @@ module.exports = {
       Correo: {
         type: Sequelize.STRING
       },
+      Password: {
+        type: Sequelize.STRING
+      },
       createdAt: {
         allowNull: false,
         type: Sequelize.DATE

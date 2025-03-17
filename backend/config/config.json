@@ -2,21 +2,21 @@
   "development": {
     "username": "postgres",
     "password": "PassPostgress",
-    "database": "GestorVentas_DEV",
+    "database": "GestorTareas_DEV",
     "host": "127.0.0.1",
     "dialect": "postgres"
   },
   "test": {
     "username": "postgres",
     "password": "PassPostgress",
-    "database": "GestorVentas_TEST",
+    "database": "GestorTareas_TEST",
     "host": "127.0.0.1",
     "dialect": "postgres"
   },
   "production": {
     "username": "postgres",
     "password": "PassPostgress",
-    "database": "GestorVentas_PROD",
+    "database": "GestorTareas_PROD",
     "host": "127.0.0.1",
     "dialect": "postgres"
   }
