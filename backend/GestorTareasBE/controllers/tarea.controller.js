@@ -1,8 +1,10 @@
-const { Tarea } = require("../models");
+const { Task } = require("../models");
 
 exports.CrearTarea = async (req, res) => {
   try {
-    const tarea = await Tarea.create(req.body);
+    // Estado (pendiente, en progreso, completada).
+    req.body.Estado = "pendiente";
+    const tarea = await Task.create(req.body);
     res.status(201).send(tarea);
   } catch (error) {
     res
@@ -13,7 +15,7 @@ exports.CrearTarea = async (req, res) => {
 
 exports.ObtenerTareas = async (req, res) => {
   try {
-    const tareas = await Tarea.findAll();
+    const tareas = await Task.findAll();
     res.status(200).send(tareas);
   } catch (error) {
     res
@@ -24,7 +26,7 @@ exports.ObtenerTareas = async (req, res) => {
 
 exports.ObtenerTareaPorId = async (req, res) => {
   try {
-    const tarea = await Tarea.findByPk(req.params.id);
+    const tarea = await Task.findByPk(req.params.id);
     if (!tarea) {
       return res.status(404).send({ message: "Tarea no encontrada." });
     } else {
@@ -39,10 +41,45 @@ exports.ObtenerTareaPorId = async (req, res) => {
 
 exports.ActualizarTarea = async (req, res) => {
   try {
-    const tarea = await Tarea.findByPk(req.params.id);
+    if (req.body.Estado) {
+      if (
+        req.body.Estado !== "pendiente" &&
+        req.body.Estado !== "en progreso" &&
+        req.body.Estado !== "completada"
+      ) {
+        return res.status(400).send({ message: "Estado inválido." });
+      }
+    } else {
+      return res.status(400).send({ message: "Estado es requerido." });
+    }
+
+    req.body.Estado = req.body.Estado.trim().toLowerCase();
+    const tarea = await Task.findByPk(req.params.id);
+
     if (!tarea) {
       return res.status(404).send({ message: "Tarea no encontrada." });
     } else {
+      if (tarea.Estado === "completada") {
+        return res.status(400).send({
+          message:
+            "No se puede modificar una tarea completada, solo eliminarla.",
+        });
+      }
+
+      if (tarea.Estado === "pendiente" && req.body.Estado === "completada") {
+        return res.status(400).send({
+          message:
+            "No se puede completar una tarea pendiente, debe ponerse en progreso.",
+        });
+      }
+
+      if (tarea.Estado === "en progreso" && req.body.Estado === "pendiente") {
+        return res.status(400).send({
+          message:
+            "No se puede poner en pendiente una tarea en progreso, debe completarla.",
+        });
+      }
+
       await tarea.update(req.body);
       return res.status(200).send(tarea);
     }
@@ -55,7 +92,7 @@ exports.ActualizarTarea = async (req, res) => {
 
 exports.EliminarTarea = async (req, res) => {
   try {
-    const tarea = await Tarea.findByPk(req.params.id);
+    const tarea = await Task.findByPk(req.params.id);
     if (!tarea) {
       return res.status(404).send({ message: "Tarea no encontrada." });
     } else {
@@ -71,7 +108,7 @@ exports.EliminarTarea = async (req, res) => {
 
 exports.ObtenerTareasPorUsuario = async (req, res) => {
   try {
-    const tareas = await Tarea.findAll({
+    const tareas = await Task.findAll({
       where: { UsuarioId: req.params.id },
     });
     res.status(200).send(tareas);
@@ -84,14 +121,14 @@ exports.ObtenerTareasPorUsuario = async (req, res) => {
 
 exports.ObtenerTareasPorUsuarioEstadoYFecha = async (req, res) => {
   try {
-    const tareas = await Tarea.findAll({
+    const tareas = await Task.findAll({
       where: { UsuarioId: req.params.id },
     }).filter((tarea) => {
       return (
-        EsEstadoValido(req.params.estado, tarea) &&
-        EsFechaValida(req.params.estado, tarea) &&
-        EsTituloValido(req.params.titulo, tarea) &&
-        EsDescripcionValida(req.params.descripcion, tarea)
+        EsEstadoValido(req.params.Estado, tarea) &&
+        EsFechaValida(req.params.Estado, tarea) &&
+        EsTituloValido(req.params.Titulo, tarea) &&
+        EsDescripcionValida(req.params.Descripcion, tarea)
       );
     });
 
@@ -104,7 +141,7 @@ exports.ObtenerTareasPorUsuarioEstadoYFecha = async (req, res) => {
 };
 
 function EsEstadoValido(estado, tarea) {
-  return !estado || estado.trim() || tarea.Estado === req.estado;
+  return !estado || estado.trim() || tarea.Estado === estado;
 }
 
 function EsFechaValida(fecha, tarea) {
@@ -123,6 +160,6 @@ function EsDescripcionValida(descripcion, tarea) {
   return (
     !descripcion ||
     descripcion.trim() ||
-    tarea.titulo.toLowerCase().includes(descripcion.toLowerCase())
+    tarea.Titulo.toLowerCase().includes(descripcion.toLowerCase())
   );
 }
