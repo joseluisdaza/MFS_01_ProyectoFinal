@@ -1,3 +1,4 @@
+const { token } = require("morgan");
 const { Usuario } = require("../models");
 const bcrypt = require("bcryptjs");
 
@@ -92,10 +93,10 @@ exports.Login = async (req, res) => {
       );
       if (contrasenaValida) {
         //TODO: Generar un JWT y devolverlo en la respuesta.
+        var token = jwt.sign;
         return res.status(200).send({
-          id: user.id,
-          Nombre: user.Nombre,
-          Correo: user.Correo,
+          message: "Login exitoso",
+          token: token,
         });
       } else {
         return res.status(401).send({ message: "Credenciales inválidas." });
@@ -106,4 +107,9 @@ exports.Login = async (req, res) => {
       .status(400)
       .send({ message: `Hubo un problema logeando al usuario. ${error}` });
   }
+};
+
+exports.Me = async (req, res) => {
+  //TODO: Obtener el usuario a partir del token JWT.
+  res.status(500).send({ message: "No implementado." });
 };

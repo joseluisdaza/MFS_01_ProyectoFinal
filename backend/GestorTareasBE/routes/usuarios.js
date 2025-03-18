@@ -6,13 +6,18 @@ const {
   ObtenerUsuarioPorId,
   ActualizarUsuario,
   EliminarUsuario,
+  Login,
+  Me,
 } = require("../controllers/usuario.controller");
-const rutaUsuario = "/usuarios";
+const rutaUsuario = "/auth";
 
 //Rutas de usuarios
+router.post(`${rutaUsuario}/register`, CrearUsuario);
+router.post(`${rutaUsuario}/login`, Login);
+router.post(`${rutaUsuario}/me`, Me);
+
 router.get(`${rutaUsuario}`, ObtenerUsuarios);
 router.get(`${rutaUsuario}/:id`, ObtenerUsuarioPorId);
-router.post(`${rutaUsuario}`, CrearUsuario);
 router.put(`${rutaUsuario}/:id`, ActualizarUsuario);
 router.delete(`${rutaUsuario}/:id`, EliminarUsuario);
 
