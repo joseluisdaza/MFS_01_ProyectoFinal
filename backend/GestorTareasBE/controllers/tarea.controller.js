@@ -1,11 +1,29 @@
+const { where } = require("sequelize");
 const { Task } = require("../models");
+const excludedFields = ["createdAt", "updatedAt"];
 
 exports.CrearTarea = async (req, res) => {
   try {
     // Estado (pendiente, en progreso, completada).
-    req.body.Estado = "pendiente";
-    const tarea = await Task.create(req.body);
-    res.status(201).send(tarea);
+    const tarea = await Task.create({
+      Titulo: req.body.title,
+      Descripcion: req.body.description,
+      Estado: "pendiente",
+      FechaLimite: req.body.dueDate,
+      UsuarioId: req.usuario.id,
+    });
+
+    res.status(201).send({
+      message: "Tarea creada exitosamente.",
+      task: {
+        id: tarea.id,
+        title: tarea.Titulo,
+        description: tarea.Descripcion,
+        status: tarea.Estado,
+        dueDate: tarea.FechaLimite,
+        userId: tarea.UsuarioId,
+      },
+    });
   } catch (error) {
     res
       .status(400)
@@ -15,7 +33,10 @@ exports.CrearTarea = async (req, res) => {
 
 exports.ObtenerTareas = async (req, res) => {
   try {
-    const tareas = await Task.findAll();
+    const tareas = await Task.findAll({
+      where: { UsuarioId: req.usuario.id },
+      attributes: { exclude: excludedFields },
+    });
     res.status(200).send(tareas);
   } catch (error) {
     res
@@ -27,10 +48,15 @@ exports.ObtenerTareas = async (req, res) => {
 exports.ObtenerTareaPorId = async (req, res) => {
   try {
     const tarea = await Task.findByPk(req.params.id);
-    if (!tarea) {
+    if (!tarea || tarea.UsuarioId !== req.usuario.id) {
       return res.status(404).send({ message: "Tarea no encontrada." });
     } else {
-      return res.status(200).send(tarea);
+      return res.status(200).send({
+        title: tarea.Titulo,
+        description: tarea.Descripcion,
+        status: tarea.Estado,
+        dueDate: tarea.FechaLimite,
+      });
     }
   } catch (error) {
     res
@@ -41,11 +67,17 @@ exports.ObtenerTareaPorId = async (req, res) => {
 
 exports.ActualizarTarea = async (req, res) => {
   try {
-    if (req.body.Estado) {
+    taskStatus = req.body.status;
+    dueDate = req.body.dueDate;
+    title = req.body.title;
+    description = req.body.description;
+
+    if (taskStatus) {
+      taskStatus = taskStatus.trim().toLowerCase();
       if (
-        req.body.Estado !== "pendiente" &&
-        req.body.Estado !== "en progreso" &&
-        req.body.Estado !== "completada"
+        taskStatus !== "pendiente" &&
+        taskStatus !== "en progreso" &&
+        taskStatus !== "completada"
       ) {
         return res.status(400).send({ message: "Estado inválido." });
       }
@@ -53,10 +85,9 @@ exports.ActualizarTarea = async (req, res) => {
       return res.status(400).send({ message: "Estado es requerido." });
     }
 
-    req.body.Estado = req.body.Estado.trim().toLowerCase();
     const tarea = await Task.findByPk(req.params.id);
 
-    if (!tarea) {
+    if (!tarea || tarea.UsuarioId !== req.usuario.id) {
       return res.status(404).send({ message: "Tarea no encontrada." });
     } else {
       if (tarea.Estado === "completada") {
@@ -66,22 +97,39 @@ exports.ActualizarTarea = async (req, res) => {
         });
       }
 
-      if (tarea.Estado === "pendiente" && req.body.Estado === "completada") {
+      if (tarea.Estado === "pendiente" && taskStatus === "completada") {
         return res.status(400).send({
           message:
             "No se puede completar una tarea pendiente, debe ponerse en progreso.",
         });
       }
 
-      if (tarea.Estado === "en progreso" && req.body.Estado === "pendiente") {
+      if (tarea.Estado === "en progreso" && taskStatus === "pendiente") {
         return res.status(400).send({
           message:
             "No se puede poner en pendiente una tarea en progreso, debe completarla.",
         });
       }
 
-      await tarea.update(req.body);
-      return res.status(200).send(tarea);
+      await tarea.update({
+        Estado: taskStatus,
+        FechaLimite: dueDate,
+        Titulo: title,
+        Descripcion: description,
+        UsuarioId: req.usuario.id,
+      });
+
+      return res.status(200).send({
+        message: "Tarea actualizada exitosamente.",
+        task: {
+          id: tarea.id,
+          title: tarea.Titulo,
+          description: tarea.Descripcion,
+          status: tarea.Estado,
+          dueDate: tarea.FechaLimite,
+          userId: tarea.UsuarioId,
+        },
+      });
     }
   } catch (error) {
     res
@@ -93,7 +141,8 @@ exports.ActualizarTarea = async (req, res) => {
 exports.EliminarTarea = async (req, res) => {
   try {
     const tarea = await Task.findByPk(req.params.id);
-    if (!tarea) {
+
+    if (!tarea || tarea.UsuarioId !== req.usuario.id) {
       return res.status(404).send({ message: "Tarea no encontrada." });
     } else {
       await tarea.destroy();
@@ -103,19 +152,6 @@ exports.EliminarTarea = async (req, res) => {
     res
       .status(400)
       .send({ message: `Hubo un problema eliminando la tarea. ${error}` });
-  }
-};
-
-exports.ObtenerTareasPorUsuario = async (req, res) => {
-  try {
-    const tareas = await Task.findAll({
-      where: { UsuarioId: req.params.id },
-    });
-    res.status(200).send(tareas);
-  } catch (error) {
-    res
-      .status(400)
-      .send({ message: `Hubo un problema obteniendo las tareas. ${error}` });
   }
 };
 

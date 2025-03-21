@@ -1,5 +1,7 @@
 const express = require("express");
 const router = express.Router();
+const auth = require("../middleware/auth");
+
 const {
   CrearTarea,
   ObtenerTareas,
@@ -11,11 +13,11 @@ const {
 const rutaTareas = "/tasks";
 
 //Rutas de tareas
-router.post(`${rutaTareas}`, CrearTarea);
-router.get(`${rutaTareas}`, ObtenerTareas);
-router.get(`${rutaTareas}/:id`, ObtenerTareaPorId);
-router.get(`${rutaTareas}/:id`, ObtenerTareasPorUsuario);
-router.put(`${rutaTareas}/:id`, ActualizarTarea);
-router.delete(`${rutaTareas}/:id`, EliminarTarea);
+router.post(`${rutaTareas}`, auth, CrearTarea);
+router.get(`${rutaTareas}`, auth, ObtenerTareas);
+router.get(`${rutaTareas}/:id`, auth, ObtenerTareaPorId);
+// router.get(`${rutaTareas}/:id`, auth, ObtenerTareasPorUsuario);
+router.put(`${rutaTareas}/:id`, auth, ActualizarTarea);
+router.delete(`${rutaTareas}/:id`, auth, EliminarTarea);
 
 module.exports = router;

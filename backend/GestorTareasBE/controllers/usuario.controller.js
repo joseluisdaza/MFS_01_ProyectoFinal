@@ -14,7 +14,6 @@ exports.CrearUsuario = async (req, res) => {
     const hashedPassword = await bcrypt.hashSync(Password, salt);
 
     //TODO: Agregar validaciones para que no hayan dos cuentas con el mismo correo.
-
     const usuario = await Usuario.create({
       Nombre: Nombre,
       Correo: Correo,
@@ -101,10 +100,6 @@ exports.EliminarUsuario = async (req, res) => {
 exports.Login = async (req, res) => {
   try {
     const { Correo, Password } = req.body;
-    console.log(req.body);
-    console.log(Correo);
-    console.log(Password);
-
     const usuario = await Usuario.findOne({
       where: { Correo: Correo },
     });
@@ -113,12 +108,8 @@ exports.Login = async (req, res) => {
       return res.status(404).send({ message: "Usuario no encontrado." });
     }
 
-    console.log("Password de la DB");
-    console.log(usuario.Password);
     // const contrasenaValida = bcrypt.compareSync(Password, usuario.Password);
     const contrasenaValida = Password === usuario.Password;
-    console.log("Contraseña valida");
-    console.log(contrasenaValida);
 
     if (!contrasenaValida) {
       return res.status(401).send({ message: "Credenciales inválidas." });
