@@ -1,5 +1,7 @@
 const express = require("express");
 const router = express.Router();
+const auth = require("../middleware/auth");
+
 const {
   CrearUsuario,
   ObtenerUsuarios,
@@ -14,11 +16,11 @@ const rutaUsuario = "/auth";
 //Rutas de usuarios
 router.post(`${rutaUsuario}/register`, CrearUsuario);
 router.post(`${rutaUsuario}/login`, Login);
-router.post(`${rutaUsuario}/me`, Me);
+router.post(`${rutaUsuario}/me`, auth, Me);
 
 router.get(`${rutaUsuario}`, ObtenerUsuarios);
 router.get(`${rutaUsuario}/:id`, ObtenerUsuarioPorId);
-router.put(`${rutaUsuario}/:id`, ActualizarUsuario);
-router.delete(`${rutaUsuario}/:id`, EliminarUsuario);
+router.put(`${rutaUsuario}/:id`, auth, ActualizarUsuario);
+router.delete(`${rutaUsuario}/:id`, auth, EliminarUsuario);
 
 module.exports = router;
