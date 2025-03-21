@@ -1,4 +1,4 @@
-const { where } = require("sequelize");
+const { where, Op } = require("sequelize");
 const { Task } = require("../models");
 const excludedFields = ["createdAt", "updatedAt"];
 
@@ -33,10 +33,25 @@ exports.CrearTarea = async (req, res) => {
 
 exports.ObtenerTareas = async (req, res) => {
   try {
+    const { status, search } = req.query;
+    const whereClause = { UsuarioId: req.usuario.id };
+
+    if (status) {
+      whereClause.Estado = status;
+    }
+
+    if (search) {
+      whereClause[Op.or] = [
+        { Titulo: { [Op.like]: `%${search}%` } },
+        { Descripcion: { [Op.like]: `%${search}%` } },
+      ];
+    }
+
     const tareas = await Task.findAll({
-      where: { UsuarioId: req.usuario.id },
+      where: whereClause,
       attributes: { exclude: excludedFields },
     });
+
     res.status(200).send(tareas);
   } catch (error) {
     res
