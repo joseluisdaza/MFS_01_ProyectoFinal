@@ -16,7 +16,7 @@ const rutaUsuario = "/auth";
 //Rutas de usuarios
 router.post(`${rutaUsuario}/register`, CrearUsuario);
 router.post(`${rutaUsuario}/login`, Login);
-router.post(`${rutaUsuario}/me`, auth, Me);
+router.get(`${rutaUsuario}/me`, auth, Me);
 
 router.get(`${rutaUsuario}`, ObtenerUsuarios);
 router.get(`${rutaUsuario}/:id`, ObtenerUsuarioPorId);

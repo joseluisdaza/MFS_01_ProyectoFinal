@@ -20,9 +20,11 @@ exports.CrearUsuario = async (req, res) => {
       Correo: Correo,
       Password: hashedPassword,
     });
-    res
-      .status(201)
-      .send({ message: `Usuario Registrado con exito. ${Nombre}` });
+    res.status(201).send({
+      name: usuario.Nombre,
+      email: usuario.Correo,
+      password: Password,
+    });
   } catch (error) {
     res
       .status(400)
@@ -140,5 +142,5 @@ exports.Login = async (req, res) => {
 
 exports.Me = async (req, res) => {
   //TODO: Obtener el usuario a partir del token JWT.
-  res.status(500).send({ message: "No implementado." });
+  res.status(200).send(req.usuario);
 };
