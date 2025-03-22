@@ -4,30 +4,67 @@ const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const JWT_SECRET = process.env.JWT_SECRET || "jwt_secret";
 const excludedFields = ["Password", "createdAt", "updatedAt"];
+const SALT_ROUNDS = parseInt(process.env.SALT_ROUNDS) || 10;
 
 exports.CrearUsuario = async (req, res) => {
   try {
     const { Nombre, Correo, Password } = req.body;
 
-    //Encryptar la contraseña
-    const salt = await bcrypt.genSaltSync(10);
-    const hashedPassword = await bcrypt.hashSync(Password, salt);
+    // const hashedPassword = bcrypt.hash(Password, SALT_ROUNDS);
 
-    //TODO: Agregar validaciones para que no hayan dos cuentas con el mismo correo.
+    // const usuario = await Usuario.create({
+    //   Nombre: Nombre,
+    //   Correo: Correo,
+    //   Password: hashedPassword,
+    // });
+
     const usuario = await Usuario.create({
       Nombre: Nombre,
       Correo: Correo,
-      Password: hashedPassword,
+      Password: Password,
     });
+
     res.status(201).send({
       name: usuario.Nombre,
       email: usuario.Correo,
-      password: Password,
     });
   } catch (error) {
     res
       .status(400)
       .send({ message: `Hubo un problema creando el usuario. ${error}` });
+  }
+};
+
+exports.Login = async (req, res) => {
+  try {
+    const { Correo, Password } = req.body;
+    const usuario = await Usuario.findOne({
+      where: { Correo: Correo },
+    });
+
+    if (!usuario) {
+      return res.status(404).send({ message: "Usuario no encontrado." });
+    }
+
+    const contrasenaValida = Password === usuario.Password;
+    // const contrasenaValida = await bcrypt.compare(Password, usuario.Password);
+    if (!contrasenaValida) {
+      return res.status(401).send({ message: "Credenciales inválidas." });
+    }
+
+    //Generar token JWT
+    const token = jwt.sign({ id: usuario.id }, JWT_SECRET, {
+      expiresIn: 3600, // 24 horas
+    });
+
+    res.status(200).send({
+      message: "Login exitoso",
+      token: token,
+    });
+  } catch (error) {
+    res
+      .status(400)
+      .send({ message: `Hubo un problema iniciando sesión. ${error}` });
   }
 };
 
@@ -94,40 +131,6 @@ exports.EliminarUsuario = async (req, res) => {
     res
       .status(400)
       .send({ message: `Hubo un problema eliminando el usuario. ${error}` });
-  }
-};
-
-exports.Login = async (req, res) => {
-  try {
-    const { Correo, Password } = req.body;
-    const usuario = await Usuario.findOne({
-      where: { Correo: Correo },
-    });
-
-    if (!usuario) {
-      return res.status(404).send({ message: "Usuario no encontrado." });
-    }
-
-    // const contrasenaValida = bcrypt.compareSync(Password, usuario.Password);
-    const contrasenaValida = Password === usuario.Password;
-
-    if (!contrasenaValida) {
-      return res.status(401).send({ message: "Credenciales inválidas." });
-    }
-
-    //Generar token JWT
-    const token = jwt.sign({ id: usuario.id }, JWT_SECRET, {
-      expiresIn: 3600, // 24 horas
-    });
-
-    res.status(200).send({
-      message: "Login exitoso",
-      token: token,
-    });
-  } catch (error) {
-    res
-      .status(400)
-      .send({ message: `Hubo un problema iniciando sesión. ${error}` });
   }
 };
 

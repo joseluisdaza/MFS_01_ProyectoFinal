@@ -7,7 +7,7 @@ function App() {
   const [token, setToken] = useState(null);
 
   return (
-    <div class name="App">
+    <div className="App">
       <header className="App-header">
         {!token ? <Login setToken={setToken} /> : <Tasks token={token} />}
       </header>

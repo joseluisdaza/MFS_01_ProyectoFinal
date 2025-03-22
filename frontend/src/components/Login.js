@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import axios from "axios";
 import bcrypt from "bcryptjs";
 
-const BACKEND_URL = process.env.BACKEND_URL || "http://localhost:3001";
+const BACKEND_URL = process.env.BACKEND_URL || "http://localhost:3000/api/";
 const LOGIN_URL = `${BACKEND_URL}auth/login`;
 
 const Login = ({ setToken }) => {
@@ -10,15 +10,23 @@ const Login = ({ setToken }) => {
   const [password, setPassword] = useState("");
 
   const handleSubmit = async (e) => {
-    console.log("LOGIN SUBMIT");
     e.preventDefault();
     try {
-      const salt = await bcrypt.genSaltSync(10);
-      const hashedPassword = await bcrypt.hashSync(password, salt);
+      // const salt = await bcrypt.genSalt(10);
+      // const hashedPassword = await bcrypt.hash(password, salt);
+
+      // console.log("LOGIN HASHED PASSWORD:");
+      // console.log(hashedPassword);
+      // console.log(password);
+
+      // const response = await axios.post(LOGIN_URL, {
+      //   Correo: email,
+      //   Password: hashedPassword,
+      // });
 
       const response = await axios.post(LOGIN_URL, {
         Correo: email,
-        Password: hashedPassword,
+        Password: password,
       });
 
       console.log("LOGIN RESPONSE:");

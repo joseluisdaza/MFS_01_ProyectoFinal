@@ -3,7 +3,7 @@ import axios from "axios";
 // import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 
-const BACKEND_URL = process.env.BACKEND_URL || "http://localhost:3001/api/";
+const BACKEND_URL = process.env.BACKEND_URL || "http://localhost:3000/api/";
 const TASKS_URL = `${BACKEND_URL}tasks`;
 
 const Tasks = ({ token }) => {
@@ -22,6 +22,7 @@ const Tasks = ({ token }) => {
           params: { status, search },
         });
 
+        console.log(response.data);
         setTasks(response.data);
       } catch (error) {
         console.error(`ERROR: Getting the tasks: ${error}`);
@@ -30,37 +31,6 @@ const Tasks = ({ token }) => {
 
     getTasks();
   }, [token, status, search]);
-
-  // const handleSubmit = async (e) => {
-  //   e.preventDefault();
-  //   try {
-  //     await axios.post(
-  //       "http://localhost:3001/tasks",
-  //       { description: newTask },
-  //       {
-  //         headers: {
-  //           Authorization: `Bearer ${token}`,
-  //         },
-  //       }
-  //     );
-  //     setNewTask("");
-  //   } catch (error) {
-  //     console.error(error);
-  //   }
-  // };
-
-  // const handleDelete = async (id) => {
-  //   try {
-  //     await axios.delete(`http://localhost:3001/tasks/${id}`, {
-  //       headers: {
-  //         Authorization: `Bearer ${token}`,
-  //       },
-  //     });
-  //     setTasks(tasks.filter((task) => task.id !== id));
-  //   } catch (error) {
-  //     console.error(error);
-  //   }
-  // };
 
   return (
     <div>
@@ -86,37 +56,17 @@ const Tasks = ({ token }) => {
       <ul>
         {tasks.map((task) => (
           <li key={task.id}>
-            <div class="taskCard">
-              <h3>{task.description}</h3>
-              <p>{task.status}</p>
+            <div className="taskCard">
+              <h3>{task.Titulo}</h3>
+              <p>{task.Estado}</p>
               {/* <DatePicker selected={new Date(task.dueDate)} /> */}
-              <input type="text" value={task.description} />
+              <input type="text" value={task.Descripcion} />
               {/* <button onClick={() => handleDelete(task.id)}>Eliminar</button> */}
             </div>
           </li>
         ))}
       </ul>
     </div>
-
-    // <div>
-    //   <h2>Tareas</h2>
-    //   <ul>
-    //     {tasks.map((task) => (
-    //       <li key={task.id}>
-    //         {task.description}
-    //         <button onClick={() => handleDelete(task.id)}>Eliminar</button>
-    //       </li>
-    //     ))}
-    //   </ul>
-    //   <form onSubmit={handleSubmit}>
-    //     <input
-    //       type="text"
-    //       value={newTask}
-    //       onChange={(e) => setNewTask(e.target.value)}
-    //     />
-    //     <button type="submit">Agregar</button>
-    //   </form>
-    // </div>
   );
 };
 
