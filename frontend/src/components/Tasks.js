@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
-// import DatePicker from "react-datepicker";
+import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 
 const BACKEND_URL = process.env.BACKEND_URL || "http://localhost:3000/api/";
@@ -32,6 +32,41 @@ const Tasks = ({ token }) => {
     getTasks();
   }, [token, status, search]);
 
+  const handleSave = async (task) => {
+    try {
+      await axios.put(
+        `${TASKS_URL}/${task.id}`,
+        {
+          Titulo: task.Titulo,
+          Descripcion: task.description,
+          Estado: task.Estado,
+          FechaLimite: task.FechaLimite,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      alert("Tarea guardada.");
+    } catch (error) {
+      console.error(`ERROR: Error guardando la tarea ${task.id}: ${error}`);
+    }
+  };
+
+  const handleDelete = async (id) => {
+    try {
+      await axios.delete(`${TASKS_URL}/${id}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      setTasks(tasks.filter((task) => task.id !== id));
+    } catch (error) {
+      console.error(`ERROR: Error eliminando la tarea ${id}: ${error}`);
+    }
+  };
+
   return (
     <div>
       <div>
@@ -58,10 +93,23 @@ const Tasks = ({ token }) => {
           <li key={task.id}>
             <div className="taskCard">
               <h3>{task.Titulo}</h3>
-              <p>{task.Estado}</p>
-              {/* <DatePicker selected={new Date(task.dueDate)} /> */}
+              <div>
+                <select
+                  value={task.Estado}
+                  onChange={(e) => (task.Estado = e.target.value)}
+                >
+                  <option value="pendiente">Pendiente</option>
+                  <option value="en progreso">Pendiente</option>
+                  <option value="completada">Completado</option>
+                </select>
+
+                <DatePicker selected={new Date(task.FechaLimite)} />
+              </div>
               <input type="text" value={task.Descripcion} />
-              {/* <button onClick={() => handleDelete(task.id)}>Eliminar</button> */}
+              <div>
+                <button onClick={() => handleSave(task)}>Guardar</button>
+                <button onClick={() => handleDelete(task)}>Eliminar</button>
+              </div>
             </div>
           </li>
         ))}
